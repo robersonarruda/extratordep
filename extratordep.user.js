@@ -8,13 +8,12 @@
 // ==/UserScript==
 
 
-/* Governador, paga nossos direitos! Reforma da Previdência NÃO! Melhorias nos benefícios JÁ!
- *
- * Escola Juarez Rodrigues dos Anjos: Aquele abraço!
- *
- * VAMOS,FLAMENGO!!
- *
- * É Hora de Mudar. Com Pepsi, sim!
+/*
+* "Quando tudo está perdido,
+* Sempre existe um caminho.
+* Quando tudo está perdido,
+* Sempre existe uma luz!" 
+* (A Via Láctea - Legião Urbana)
 */
 
 //CARREGA libJquery
