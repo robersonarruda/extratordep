@@ -1,9 +1,12 @@
 // ==UserScript==
 // @name       Extrator de dependencias
-// @version    1.0.0.4
+// @version    1.0.0.5
 // @description  Coleta dados de históricos do sigeduca para ser analisado por uma planilha específica alunos com dependências de disciplinas escolares.
 // @author       Roberson Arruda
 // @match	*sigeduca.seduc.mt.gov.br/ged/hwmgedhistorico.aspx*
+// @homepage      https://github.com/robersonarruda/extratordep/blob/main/extratordep.user.js
+// @downloadURL   https://github.com/robersonarruda/extratordep/raw/main/extratordep.user.js
+// @updateURL     https://github.com/robersonarruda/extratordep/raw/main/extratordep.user.js
 // @copyright  2024, Roberson Arruda (robersonarruda@outlook.com)
 // ==/UserScript==
 
