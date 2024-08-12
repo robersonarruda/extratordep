@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name       Extrator de dependencias
-// @version    1.0.0.5
+// @version    1.0.0.9
 // @description  Coleta dados de históricos do sigeduca para ser analisado por uma planilha específica alunos com dependências de disciplinas escolares.
 // @author       Roberson Arruda
 // @match	*sigeduca.seduc.mt.gov.br/ged/hwmgedhistorico.aspx*
@@ -148,6 +148,33 @@ var restvar = function(){
      posrec = 0;
 }
 
+function extrairAno(texto) {
+    // Primeiro, verificar se é FUNDAMENTAL e não contém MÉDIO
+    if (texto.includes("FUNDAMENTAL") && !texto.includes("MÉDIO")) {
+        // Regex para encontrar o último número seguido de º ou ° (como "4º")
+        const regexUltimoNumero = /(\d)[º°]/g;
+        const resultadoUltimoNumero = [...texto.matchAll(regexUltimoNumero)].pop();
+
+        // Se encontrou um número no padrão "4º"
+        if (resultadoUltimoNumero) {
+            // Retornar como "4º ANO DO FUNDAMENTAL"
+            return `${resultadoUltimoNumero[0].replace(/°/, 'º')} ANO DO FUNDAMENTAL`;
+        }
+    }
+
+    // Se não for FUNDAMENTAL, procurar por "Xº ANO"
+    const regexAno = /[1-3][º°]\s?ANO/gi;
+    const resultadoAno = texto.match(regexAno);
+
+    // Se encontrou "Xº ANO", normalize-o
+    if (resultadoAno) {
+        return resultadoAno[0].replace(/°/, 'º').replace(/\s/g, '');
+    }
+
+    // Retorna null se nenhum dos padrões foi encontrado
+    return null;
+}
+
 //Coletar códigos do hitórico
 function coletcodhist(aluno){
     tentativa = 0;
@@ -221,8 +248,8 @@ function coletcodhist(aluno){
         }
     },100)
 }
-function coletar()
-{
+
+function coletar(){
     restvar();
     txtareaDados.value ="";
     vetAluno = txtareaAluno.value.match(/[0-9]+/g).filter(Boolean);
@@ -264,9 +291,12 @@ function coletaDados(){
                     a = a + ";"+parent.frames[0].document.getElementById('span_vGEDALUNOM').innerHTML.replace(" - ", "");
                     sithist = parent.frames[0].document.getElementById('vGEDHISTSITAPR');
                     a = a +";"+sithist.options[sithist.selectedIndex].text;
-                    seriehist = parent.frames[0].document.getElementById(serie).innerHTML; //Série do histórico
-                    seriehist = seriehist.split("&gt;");
-                    seriehist = seriehist[seriehist.length-1].replace(/ /g,"");
+                    seriehist = parent.frames[0].document.getElementById(serie).innerHTML; //Texto contendo "...ENSINO MÉDIO > REGULAR > ... > 1º ANO > 10º" etc
+                    seriehist = extrairAno(seriehist); // Extrai apenas a série "1ºANO,2ºANO,etc".
+
+                    //seriehist = seriehist.split("&gt;"); //método anterior, substituído pelo acima, devido mudança na nomenclatura do novo ensino médio.
+                    //seriehist = seriehist[seriehist.length-1].replace(/ /g,"");
+
                     a = a + ";" +seriehist;
                     a = a + ";AREA: "+parent.frames[0].document.getElementById(area+zero+linhaarea.toString()).innerHTML; //Área do conhecimento
                     a = a + "-"+parent.frames[0].document.getElementById(sitarea+zero+linhaarea.toString()).innerHTML +";"; //Situação área do conhecimento
@@ -306,14 +336,14 @@ function coletaDados(){
                         copiar();
                     }
                 }
-                }while(finalarea == 0)
+            }while(finalarea == 0)
 
-            }
-            else{
-                alert('Falha: nenhum código de aluno válido. Tente novamente!');
-            }
-            },500)
         }
+        else{
+                alert('Falha: nenhum código de aluno válido. Tente novamente!');
+        }
+    },500)
+}
 
 //BOTÃO EXIBIR ou ESCONDER
 var exibir = '$("#credito1").slideToggle();if(this.value=="ESCONDER"){this.value="EXIBIR"}else{this.value="ESCONDER"}';
@@ -431,5 +461,3 @@ span1.appendChild(br1);
 span1 = document.createElement('span');
 span1.textContent = `${scriptName} v${scriptVersion}`
 divCredito.appendChild(span1);
-
-window.scrollTo(0, document.body.scrollHeight);
