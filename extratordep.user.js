@@ -74,40 +74,40 @@ function slideToggle(elementId, duracao = 300) {
 var styleSCT = document.createElement('style');
 styleSCT.type = 'text/css';
 styleSCT.innerHTML =
-    '.botaoSCT {'+
-    '	-moz-box-shadow:inset 1px 1px 0px 0px #b2ced4;'+
-    '	-webkit-box-shadow:inset 1px 1px 0px 0px #b2ced4;'+
-    '	box-shadow:inset 1px 1px 0px 0px #b2ced4;'+
-    '	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #4e88ed), color-stop(1, #3255c7) );'+
-    '	background:-moz-linear-gradient( center top, #4e88ed 5%, #3255c7 100% );'+
-    '	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#4e88ed", endColorstr="#3255c7");'+
-    '	background-color:#4e88ed;'+
-    '	-moz-border-radius:4px;'+
-    '	-webkit-border-radius:4px;'+
-    '	border-radius:4px;'+
-    '	border:1px solid #102b4d;'+
-    '	display:inline-block;'+
-    '	color:#ffffff;'+
-    '	font-family:Trebuchet MS;'+
-    '	font-size:11px;'+
-    '	font-weight:bold;'+
-    '	padding:2px 0px;'+
-    '	width:152px;'+
-    '	text-decoration:none;'+
-    '	text-shadow:1px 1px 0px #100d29;'+
-    '}.botaoSCT:hover {'+
-    '	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #3255c7), color-stop(1, #4e88ed) );'+
-    '	background:-moz-linear-gradient( center top, #3255c7 5%, #4e88ed 100% );'+
-    '	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#3255c7", endColorstr="#4e88ed");'+
-    '	background-color:#3255c7;'+
-    '}.botaoSCT:active {'+
-    '	position:relative;'+
-    '	top:1px;}'+
-    '.menuSCT{'+
-    '	-moz-border-radius:4px;'+
-    '	-webkit-border-radius:4px;'+
-    '	border-radius:4px;'+
-    '	border:1px solid #102b4d;}'
+`    .botaoSCT {
+    	-moz-box-shadow:inset 1px 1px 0px 0px #b2ced4;
+    	-webkit-box-shadow:inset 1px 1px 0px 0px #b2ced4;
+    	box-shadow:inset 1px 1px 0px 0px #b2ced4;
+    	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #4e88ed), color-stop(1, #3255c7) );
+    	background:-moz-linear-gradient( center top, #4e88ed 5%, #3255c7 100% );
+    	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#4e88ed", endColorstr="#3255c7");
+    	background-color:#4e88ed;
+    	-moz-border-radius:4px;
+    	-webkit-border-radius:4px;
+    	border-radius:4px;
+    	border:1px solid #102b4d;
+    	display:inline-block;
+    	color:#ffffff;
+    	font-family:Trebuchet MS;
+    	font-size:11px;
+    	font-weight:bold;
+    	padding:2px 0px;
+    	width:152px;
+    	text-decoration:none;
+    	text-shadow:1px 1px 0px #100d29;
+    }.botaoSCT:hover {
+    	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #3255c7), color-stop(1, #4e88ed) );
+    	background:-moz-linear-gradient( center top, #3255c7 5%, #4e88ed 100% );
+    	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#3255c7", endColorstr="#4e88ed");
+    	background-color:#3255c7;
+    }.botaoSCT:active {
+    	position:relative;
+    	top:1px;}
+    .menuSCT{
+    	-moz-border-radius:4px;
+    	-webkit-border-radius:4px;
+    	border-radius:4px;
+    	border:1px solid #102b4d;}`
 document.getElementsByTagName('head')[0].appendChild(styleSCT);
 
 //Dados de metadados do script
