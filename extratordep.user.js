@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name       Extrator de dependencias
-// @version    1.0.0.9
+// @version    1.1.0.0
 // @description  Coleta dados de históricos do sigeduca para ser analisado por uma planilha específica alunos com dependências de disciplinas escolares.
 // @author       Roberson Arruda
 // @match		  http://*.seduc.mt.gov.br/ged/hwmgedhistorico.aspx*
@@ -16,7 +16,7 @@
 * "Quando tudo está perdido,
 * Sempre existe um caminho.
 * Quando tudo está perdido,
-* Sempre existe uma luz!" 
+* Sempre existe uma luz!"
 * (A Via Láctea - Legião Urbana)
 */
 
@@ -102,9 +102,11 @@ var link = "http://sigeduca.seduc.mt.gov.br/ged/hwtgedhistoricoescolar.aspx?";
 var area = "span_vGEDHISTAREADSCG_00";
 var sitarea = "span_vGEDHISTAREASITAPRG_00";
 var disciplina = "span_vGEDHISTDISCNOM_00";
+var codDisciplina = "span_vGEDHISTDISCCODG_00";
 var sitdisciplina = "span_vGEDHISTDISCSITAPRG_00";
 var serie = "span_vGEDSERIEDSCCPL";
 var seriehist;
+var texto;
 
 //FUNÇÃO SALVAR CONTEÚDO EM CSV
 function saveTextAsFile() {
@@ -147,6 +149,7 @@ var restvar = function(){
      finalarea = 0;
      finaldisc = 0;
      posrec = 0;
+     texto = "";
 }
 
 function extrairAno(texto) {
@@ -156,9 +159,9 @@ function extrairAno(texto) {
         const regexUltimoNumero = /(\d)[º°]/g;
         const resultadoUltimoNumero = [...texto.matchAll(regexUltimoNumero)].pop();
 
-        // Se encontrou um número no padrão "4º"
+        // Se encontrou um número no padrão "Xº"
         if (resultadoUltimoNumero) {
-            // Retornar como "4º ANO DO FUNDAMENTAL"
+            // Retornar como "Xº ANO DO FUNDAMENTAL"
             return `${resultadoUltimoNumero[0].replace(/°/, 'º')} ANO DO FUNDAMENTAL`;
         }
     }
@@ -257,6 +260,9 @@ function coletar(){
 
     coletcodhist(vetAluno[n]);
     var iniciar = setInterval(()=>{
+        let progresso = Math.round((n+1)/(vetAluno.length) * 100);
+        txtareaDados.value = `Processando etapa 1 de 2... ${progresso}%`;
+
         if(n < vetAluno.length-1){
             if(finalizado == 1){
                 n++;
@@ -286,6 +292,8 @@ function coletaDados(){
     setTimeout(()=>{
         if(cadastro[lin].length >= 1){
             do{
+                let progresso = Math.round((lin+1)/(cadastro.length) * 100);
+                txtareaDados.value = `Processando etapa 2 de 2... ${progresso}%`;
                 if(parent.frames[0].document.getElementById(area+zero+linhaarea.toString()) !== null){
                     finaldisc = 0;
                     a = a + cadastro[lin][0]; //Cod Aluno
@@ -295,16 +303,19 @@ function coletaDados(){
                     seriehist = parent.frames[0].document.getElementById(serie).innerHTML; //Texto contendo "...ENSINO MÉDIO > REGULAR > ... > 1º ANO > 10º" etc
                     seriehist = extrairAno(seriehist); // Extrai apenas a série "1ºANO,2ºANO,etc".
 
-                    //seriehist = seriehist.split("&gt;"); //método anterior, substituído pelo acima, devido mudança na nomenclatura do novo ensino médio.
-                    //seriehist = seriehist[seriehist.length-1].replace(/ /g,"");
-
                     a = a + ";" +seriehist;
                     a = a + ";AREA: "+parent.frames[0].document.getElementById(area+zero+linhaarea.toString()).innerHTML; //Área do conhecimento
                     a = a + "-"+parent.frames[0].document.getElementById(sitarea+zero+linhaarea.toString()).innerHTML +";"; //Situação área do conhecimento
                     do{
-                        if(parent.frames[0].document.getElementById(disciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString()) !== null){
-                            a = a +parent.frames[0].document.getElementById(disciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString()).innerHTML; //Disciplina
-                            a = a + "-"+parent.frames[0].document.getElementById(sitdisciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString()).innerHTML+";"; //Situação da Disciplina
+                        if(parent.frames[0].document.getElementById(disciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString().trim()) !== null){
+                            let disciplinadoHistorico = parent.frames[0].document.getElementById(disciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString()).innerHTML.trim();
+                            let codDaDisciplina = parent.frames[0].document.getElementById(codDisciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString()).innerHTML.trim();
+                            let situacaoDaDisciplina = parent.frames[0].document.getElementById(sitdisciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString()).innerHTML.trim();
+                            if(disciplinadoHistorico=="MATEMÁTICA")
+                            {
+                                disciplinadoHistorico = `${codDaDisciplina}MATEMÁTICA`; //Se a disciplina for "Matemática", adiciona o código da disciplina ao seu nome, para separar a "Matemática da Trilha de Aprof" da "Matemática "comum'".
+                            }
+                            a = a +disciplinadoHistorico+"-"+situacaoDaDisciplina+";"; //Guarda a disciplina e a sua situação na variável "a", para ser exibido no final.
                             linhadisc++;
                             if(linhadisc > 9){zero="";};
                         }
@@ -321,7 +332,7 @@ function coletaDados(){
                     finalarea = 1;
                     a = a.replace(/&gt;/g,">")
                     historicos[col-1] = a;
-                    txtareaDados.value = txtareaDados.value+a+"\n";
+                    texto = texto+a+"\n"; //#1 incluído em 24-09-2024 - antes era: txtareaDados.value = txtareaDados.value+a+"\n";
                     col++;
                     if(col < cadastro[lin].length){
                         ifrIframe1.src = link+cadastro[lin][col]+","+cadastro[lin][0]+",HWMGedHistorico,,UPD,N";
@@ -333,6 +344,7 @@ function coletaDados(){
                         ifrIframe1.src = link+cadastro[lin][col]+","+cadastro[lin][0]+",HWMGedHistorico,,UPD,N";
                     }
                     else{
+                        txtareaDados.value = texto; //#1 Incluído em 24-09-2024. Resultado exibido ao final.
                         alert('finalizado!');
                         copiar();
                     }
