@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name       Extrator de dependencias
-// @version    1.1.0.1
+// @version    1.1.0.2
 // @description  Coleta dados de históricos do sigeduca para ser analisado por uma planilha específica alunos com dependências de disciplinas escolares.
 // @author       Roberson Arruda
 // @match		  http://*.seduc.mt.gov.br/ged/hwmgedhistorico.aspx*
@@ -11,8 +11,13 @@
 // @copyright  2024, Roberson Arruda (robersonarruda@outlook.com)
 // ==/UserScript==
 
+/* Utilização:
+ Ao colar os códigos dos alunos no extrator, esse irá verificar quais alunos tem registros de dependência e irá extrair os dados de históricos desses alunos.
+ A planilha analisadora irá receber esses dados (através do botão colar) e verificar quais disciplinas foram pagas ou não e gerar um relatório apenas dos alunos que estão com dependências não pagas.
 
-/*
+ Faça download da planilha analisadora e abra com Excel - download em https://drive.google.com/file/d/19MRe-08jAzLXppmvv9YU_ihW7OLPtjZP
+
+
 * "Quando tudo está perdido,
 * Sempre existe um caminho.
 * Quando tudo está perdido,
@@ -20,6 +25,8 @@
 * (A Via Láctea - Legião Urbana)
 */
 
+(function() {
+    'use strict';
 
 // Função para simular o Slide do Jquery, dispensando uso dessa biblioteca
 const alturasOriginais = {}; // Armazena as alturas atribuídas diretamente
@@ -518,3 +525,5 @@ span1.appendChild(br1);
 span1 = document.createElement('span');
 span1.textContent = `${scriptName} v${scriptVersion}`
 divCredito.appendChild(span1);
+
+})();
