@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name       Extrator de dependencias
-// @version    1.1.0.0
+// @version    1.1.0.1
 // @description  Coleta dados de históricos do sigeduca para ser analisado por uma planilha específica alunos com dependências de disciplinas escolares.
 // @author       Roberson Arruda
 // @match		  http://*.seduc.mt.gov.br/ged/hwmgedhistorico.aspx*
@@ -20,12 +20,48 @@
 * (A Via Láctea - Legião Urbana)
 */
 
-//CARREGA libJquery
-var libJquery = document.createElement('script');
-libJquery.src = 'https://code.jquery.com/jquery-3.4.0.min.js';
-libJquery.language='javascript';
-libJquery.type = 'text/javascript';
-document.getElementsByTagName('head')[0].appendChild(libJquery);
+
+// Função para simular o Slide do Jquery, dispensando uso dessa biblioteca
+const alturasOriginais = {}; // Armazena as alturas atribuídas diretamente
+function slideToggle(elementId, duracao = 300) {
+    let element = document.getElementById(elementId);
+    if (!element) return; // Se o elemento não existir, sai da função.
+
+    // Verifica se a altura já foi armazenada. Se não, armazena a altura atribuída diretamente.
+    if (!alturasOriginais[elementId]) {
+        // Se a altura não estiver definida diretamente no estilo, vamos calcular
+        if (element.style.height === "") {
+            // Caso não tenha altura definida, usamos o scrollHeight como fallback
+            alturasOriginais[elementId] = element.scrollHeight;
+        } else {
+            // Caso tenha uma altura definida, usamos essa altura
+            alturasOriginais[elementId] = parseInt(element.style.height, 10);
+        }
+    }
+
+    if (window.getComputedStyle(element).display === "none") {
+        // Exibir com efeito de slide
+        element.style.display = "block";
+        element.style.overflow = "hidden"; // Evita transbordamento
+        element.style.height = "0px"; // Inicia com altura 0px
+
+        setTimeout(() => {
+            element.style.transition = `height ${duracao/1000}s ease-out`;
+            element.style.height = alturasOriginais[elementId] + "px"; // Usa a altura armazenada
+        }, 10);
+    } else {
+        // Ocultar com efeito de slide
+        element.style.height = "0px";
+        element.style.transition = `height ${duracao/1000}s ease-in`;
+        element.style.overflow = "hidden";
+
+        setTimeout(() => {
+            element.style.display = "none";
+            element.style.height = ""; // Reseta altura para evitar bugs
+        }, duracao);
+    }
+}
+
 
 //CSS DOS BOTÕES
 var styleSCT = document.createElement('style');
@@ -358,19 +394,27 @@ function coletaDados(){
     },500)
 }
 
-//BOTÃO EXIBIR ou ESCONDER
-var exibir = '$("#credito1").slideToggle();if(this.value=="ESCONDER"){this.value="EXIBIR"}else{this.value="ESCONDER"}';
+//BOTÃO EXIBIR ou MINIMIZAR
+function exibir(){
+    slideToggle('credito1');
+    if(this.value=="MINIMIZAR"){
+        this.value="ABRIR"
+    }
+    else{
+        this.value="MINIMIZAR"
+    };
+};
 var btnExibir = document.createElement('input');
-btnExibir.setAttribute('type','button');
-btnExibir.setAttribute('id','exibir1');
-btnExibir.setAttribute('value','ESCONDER');
-btnExibir.setAttribute('class','menuSCT');
-btnExibir.setAttribute('style','background:#FF3300; width: 187px; border: 1px solid rgb(0, 0, 0); position: fixed; z-index: 2002; bottom: 0px; right: 30px;');
-btnExibir.setAttribute('onmouseover', 'this.style.backgroundColor = "#FF7A00"');
-btnExibir.setAttribute('onmouseout', 'this.style.backgroundColor = "#FF3300"');
-btnExibir.setAttribute('onmousedown', 'this.style.backgroundColor = "#EB8038"');
-btnExibir.setAttribute('onmouseup', 'this.style.backgroundColor = "#FF7A00"');
-btnExibir.setAttribute('onclick', exibir);
+    btnExibir.setAttribute('type','button');
+    btnExibir.setAttribute('id','exibir1');
+    btnExibir.setAttribute('value','MINIMIZAR');
+    btnExibir.setAttribute('class','menuSCT');
+    btnExibir.setAttribute('style','background:#FF3300; width: 187px; border: 1px solid rgb(0, 0, 0); position: fixed; z-index: 2002; bottom: 0px; right: 30px;');
+    btnExibir.setAttribute('onmouseover', 'this.style.backgroundColor = "#FF7A00"');
+    btnExibir.setAttribute('onmouseout', 'this.style.backgroundColor = "#FF3300"');
+    btnExibir.setAttribute('onmousedown', 'this.style.backgroundColor = "#EB8038"');
+    btnExibir.setAttribute('onmouseup', 'this.style.backgroundColor = "#FF7A00"');
+    btnExibir.onclick = exibir;
 document.getElementsByTagName('body')[0].appendChild(btnExibir);
 
 //DIV principal (corpo)
