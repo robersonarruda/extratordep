@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name       Extrator de dependencias
-// @version    1.1.0.2
+// @name        Extrator de dependencias
+// @version     1.1.0.3
 // @description  Coleta dados de históricos do sigeduca para ser analisado por uma planilha específica alunos com dependências de disciplinas escolares.
 // @author       Roberson Arruda
 // @match		  http://*.seduc.mt.gov.br/ged/hwmgedhistorico.aspx*
@@ -23,6 +23,7 @@
 * Quando tudo está perdido,
 * Sempre existe uma luz!"
 * (A Via Láctea - Legião Urbana)
+
 */
 
 (function() {
@@ -299,7 +300,14 @@ function coletcodhist(aluno){
 function coletar(){
     restvar();
     txtareaDados.value ="";
-    vetAluno = txtareaAluno.value.match(/[0-9]+/g).filter(Boolean);
+
+    // Proteção contra clique sem nenhum código preenchido
+    let matchAlunos = txtareaAluno.value.match(/[0-9]+/g);
+    if (!matchAlunos) {
+        alert("Nenhum código de aluno informado!");
+        return;
+    }
+    vetAluno = matchAlunos.filter(Boolean);
 
     coletcodhist(vetAluno[n]);
     var iniciar = setInterval(()=>{
@@ -316,8 +324,15 @@ function coletar(){
         else{
             if(finalizado == 1){
                 clearInterval(iniciar);
-                ifrIframe1.addEventListener("load", coletaDados);
-                ifrIframe1.src= link+cadastro[lin][col]+","+cadastro[lin][0]+",HWMGedHistorico,,UPD,N";
+
+                // Correção: Verifica se encontrou alguma dependência antes de iniciar a Etapa 2
+                if (cadastro.length > 0) {
+                    ifrIframe1.addEventListener("load", coletaDados);
+                    ifrIframe1.src= link+cadastro[lin][col]+","+cadastro[lin][0]+",HWMGedHistorico,,UPD,N";
+                } else {
+                    txtareaDados.value = "Concluído: Nenhum aluno com dependência foi encontrado.";
+                    alert("Etapa 1 finalizada. Nenhum aluno possui dependências ativas.");
+                }
             }
             else if(finalizado == 2){clearInterval(iniciar);}
         }
@@ -333,32 +348,38 @@ function coletaDados(){
     linhaarea = 1;
     linhadisc = 1;
     setTimeout(()=>{
-        if(cadastro[lin].length >= 1){
+        // Prevenção extra para garantir que o cadastro e a linha existam
+        if(cadastro.length > 0 && cadastro[lin] && cadastro[lin].length >= 1){
+
+            // Correção: Captura o documento exato do SEU iframe, ignorando outros frames da página
+            let frameDoc = ifrIframe1.contentDocument || ifrIframe1.contentWindow.document;
+
             do{
                 let progresso = Math.round((lin+1)/(cadastro.length) * 100);
                 txtareaDados.value = `Processando etapa 2 de 2... ${progresso}%`;
-                if(parent.frames[0].document.getElementById(area+zero+linhaarea.toString()) !== null){
+
+                if(frameDoc.getElementById(area+zero+linhaarea.toString()) !== null){
                     finaldisc = 0;
                     a = a + cadastro[lin][0]; //Cod Aluno
-                    a = a + ";"+parent.frames[0].document.getElementById('span_vGEDALUNOM').innerHTML.replace(" - ", "");
-                    sithist = parent.frames[0].document.getElementById('vGEDHISTSITAPR');
+                    a = a + ";"+frameDoc.getElementById('span_vGEDALUNOM').innerHTML.replace(" - ", "");
+                    sithist = frameDoc.getElementById('vGEDHISTSITAPR');
                     a = a +";"+sithist.options[sithist.selectedIndex].text;
-                    seriehist = parent.frames[0].document.getElementById(serie).innerHTML; //Texto contendo "...ENSINO MÉDIO > REGULAR > ... > 1º ANO > 10º" etc
-                    seriehist = extrairAno(seriehist); // Extrai apenas a série "1ºANO,2ºANO,etc".
+                    seriehist = frameDoc.getElementById(serie).innerHTML;
+                    seriehist = extrairAno(seriehist);
 
                     a = a + ";" +seriehist;
-                    a = a + ";AREA: "+parent.frames[0].document.getElementById(area+zero+linhaarea.toString()).innerHTML; //Área do conhecimento
-                    a = a + "-"+parent.frames[0].document.getElementById(sitarea+zero+linhaarea.toString()).innerHTML +";"; //Situação área do conhecimento
+                    a = a + ";AREA: "+frameDoc.getElementById(area+zero+linhaarea.toString()).innerHTML;
+                    a = a + "-"+frameDoc.getElementById(sitarea+zero+linhaarea.toString()).innerHTML +";";
                     do{
-                        if(parent.frames[0].document.getElementById(disciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString().trim()) !== null){
-                            let disciplinadoHistorico = parent.frames[0].document.getElementById(disciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString()).innerHTML.trim();
-                            let codDaDisciplina = parent.frames[0].document.getElementById(codDisciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString()).innerHTML.trim();
-                            let situacaoDaDisciplina = parent.frames[0].document.getElementById(sitdisciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString()).innerHTML.trim();
+                        if(frameDoc.getElementById(disciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString().trim()) !== null){
+                            let disciplinadoHistorico = frameDoc.getElementById(disciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString()).innerHTML.trim();
+                            let codDaDisciplina = frameDoc.getElementById(codDisciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString()).innerHTML.trim();
+                            let situacaoDaDisciplina = frameDoc.getElementById(sitdisciplina+zero+linhadisc.toString()+'00'+zero+linhaarea.toString()).innerHTML.trim();
                             if(disciplinadoHistorico=="MATEMÁTICA")
                             {
-                                disciplinadoHistorico = `${codDaDisciplina}MATEMÁTICA`; //Se a disciplina for "Matemática", adiciona o código da disciplina ao seu nome, para separar a "Matemática da Trilha de Aprof" da "Matemática "comum'".
+                                disciplinadoHistorico = `${codDaDisciplina}MATEMÁTICA`;
                             }
-                            a = a +disciplinadoHistorico+"-"+situacaoDaDisciplina+";"; //Guarda a disciplina e a sua situação na variável "a", para ser exibido no final.
+                            a = a +disciplinadoHistorico+"-"+situacaoDaDisciplina+";";
                             linhadisc++;
                             if(linhadisc > 9){zero="";};
                         }
@@ -374,21 +395,21 @@ function coletaDados(){
                 else{
                     finalarea = 1;
                     a = a.replace(/&gt;/g,">")
-                    historicos[col-1] = a;
-                    texto = texto+a+"\n"; //#1 incluído em 24-09-2024 - antes era: txtareaDados.value = txtareaDados.value+a+"\n";
+                    texto = texto+a+"\n";
                     col++;
+
                     if(col < cadastro[lin].length){
                         ifrIframe1.src = link+cadastro[lin][col]+","+cadastro[lin][0]+",HWMGedHistorico,,UPD,N";
                     }
                     else if(lin < cadastro.length-1){
-                        historicos[lin] = historicos;
                         lin++;
                         col=1;
                         ifrIframe1.src = link+cadastro[lin][col]+","+cadastro[lin][0]+",HWMGedHistorico,,UPD,N";
                     }
                     else{
-                        txtareaDados.value = texto; //#1 Incluído em 24-09-2024. Resultado exibido ao final.
-                        alert('finalizado!');
+                        txtareaDados.value = texto;
+                        alert('Extração finalizada com sucesso!');
+                        ifrIframe1.removeEventListener("load", coletaDados); // Limpa o evento de memória
                         copiar();
                     }
                 }
@@ -396,7 +417,7 @@ function coletaDados(){
 
         }
         else{
-                alert('Falha: nenhum código de aluno válido. Tente novamente!');
+            alert('Falha interna: Não foi possível processar os dados deste aluno. Tente novamente!');
         }
     },500)
 }
