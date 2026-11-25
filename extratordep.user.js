@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Extrator de dependencias
-// @version     1.1.0.3
+// @version     1.2.0.0
 // @description  Coleta dados de históricos do sigeduca para ser analisado por uma planilha específica alunos com dependências de disciplinas escolares.
 // @author       Roberson Arruda
 // @match		  http://*.seduc.mt.gov.br/ged/hwmgedhistorico.aspx*
@@ -23,7 +23,6 @@
 * Quando tudo está perdido,
 * Sempre existe uma luz!"
 * (A Via Láctea - Legião Urbana)
-
 */
 
 (function() {
@@ -302,12 +301,11 @@ function coletar(){
     txtareaDados.value ="";
 
     // Proteção contra clique sem nenhum código preenchido
-    let matchAlunos = txtareaAluno.value.match(/[0-9]+/g);
-    if (!matchAlunos) {
+    let vetAluno = [...new Set(txtareaAluno.value.match(/(?<!\d)\d{6,7}(?!\d)/g) ?? [])];
+    if (!vetAluno) {
         alert("Nenhum código de aluno informado!");
         return;
     }
-    vetAluno = matchAlunos.filter(Boolean);
 
     coletcodhist(vetAluno[n]);
     var iniciar = setInterval(()=>{
